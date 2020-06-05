@@ -5,8 +5,7 @@
 <!-- badges: end -->
 
 A [fast, sparse,](https://papers.nips.cc/paper/2240-fast-sparse-gaussian-process-methods-the-informative-vector-machine.pdf) parallel implementation of [Pseudo-Marginal Inference for
-Gaussian Process Classifica-
-tion with Large Datasets](https://github.com/jakespiteri/GPclassification/blob/master/report/main.pdf), based on [Pseudo-Marginal Bayesian Inference for Gaussian Processes](https://www.researchgate.net/publication/262954130_Pseudo-Marginal_Bayesian_Inference_for_Gaussian_Processes).
+Gaussian Process Classification with Large Datasets](https://github.com/jakespiteri/GPclassification/blob/master/report/main.pdf), based on [Pseudo-Marginal Bayesian Inference for Gaussian Processes](https://www.researchgate.net/publication/262954130_Pseudo-Marginal_Bayesian_Inference_for_Gaussian_Processes).
 
 ### Authors:
 
