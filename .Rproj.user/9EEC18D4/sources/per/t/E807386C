@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1591092814409.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "511166915",
+    "id" : "E807386C",
+    "lastKnownWriteTime" : 1591284465,
+    "last_content_update" : 1591284465713,
+    "path" : "~/Documents/GroupProjectTB2/GPclassification/code/package/gpc/R/fit_model.R",
+    "project_path" : "R/fit_model.R",
+    "properties" : {
+        "cursorPosition" : "82,80",
+        "scrollLine" : "63",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

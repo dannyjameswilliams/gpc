@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1591284354248.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3289427118",
+    "id" : "2ABEE6C9",
+    "lastKnownWriteTime" : 1591284966,
+    "last_content_update" : 1591284966454,
+    "path" : "~/Documents/GroupProjectTB2/GPclassification/code/plot_nimp.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "31,1",
+        "scrollLine" : "16"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 12,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

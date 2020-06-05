@@ -1,0 +1,744 @@
+#include <RcppArmadillo.h>
+#include <Rmath.h>
+// for unix-alike machines only
+#if !defined(WIN32) && !defined(__WIN32) && !defined(__WIN32__)
+#include <unistd.h>
+#include <Rinterface.h>
+#include <RcppParallel.h>
+#endif
+
+// [[Rcpp::depends(RcppParallel)]]
+// [[Rcpp::depends(RcppArmadillo)]]
+
+using namespace arma;
+//' @keywords internal
+arma::mat chol_plus_diag(arma::mat& A, Rcpp::String type)
+{
+  bool success = false;
+  arma::mat L;
+  while(success == false)
+  {
+    if(type == "upper") {
+      success = chol(L, A, "upper");
+    } else {
+      success = chol(L, A, "lower");
+    }
+
+    if(success == false)
+    {
+      A.diag() += 1e-6;
+    }
+    R_CheckUserInterrupt();
+  }
+  return(L);
+}
+//' @keywords internal
+double prod(vec a)
+{
+  int n = a.n_elem;
+  double tmp = 1;
+  for(int i = 0; i < n; i++)
+  {
+    tmp = tmp*a[i];
+  }
+  return(tmp);
+}
+//' @keywords internal
+double calculate_A(const double& p_tilde_prop,const vec& prior_densities_prop,const double& p_tilde,
+                   const vec& prior_densities, const vec& prop_densities_1, const vec& prop_densities_2)
+{
+  double t1 = p_tilde_prop + sum(log((prior_densities_prop)));
+  double t2 = p_tilde + sum(log((prior_densities)));
+  double t3 = sum(log(prop_densities_1[1]));
+  double t4 = sum(log(prop_densities_2[1]));
+
+  double acceptance_prob = (t1 - t2) + (t3 - t4);
+  return acceptance_prob;
+}
+
+//' @keywords internal
+double log_sum(arma::vec a)
+{
+  double max_a = max(a);
+  double out = max_a + log(sum(exp(a - max_a)));
+  return(out);
+}
+
+static double const log2pi = std::log(2.0 * M_PI);
+void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
+  arma::uword const n = trimat.n_cols;
+
+  for(unsigned j = n; j-- > 0;){
+    double tmp(0.);
+    for(unsigned i = 0; i <= j; ++i)
+      tmp += trimat.at(i, j) * x[i];
+    x[j] = tmp;
+  }
+}
+
+// [[Rcpp::export(name="rmvnorm_cpp")]]
+arma::mat rmvnorm(int n, arma::vec& mu, arma::mat& sigma) {
+  int ncols = sigma.n_cols;
+  arma::mat Y = arma::randn(n, ncols);
+  return arma::repmat(mu, 1, n).t() + Y * chol_plus_diag(sigma, "upper");
+}
+
+// [[Rcpp::export(name="dmvnorm_cpp")]]
+arma::vec dmvnorm(arma::mat const &x,
+                  arma::vec const &mean,
+                  arma::mat sigma,
+                  bool const logd) {
+  using arma::uword;
+  uword const n = x.n_rows,
+    xdim = x.n_cols;
+  arma::vec out(n);
+
+  // cholesky decomp
+
+  arma::mat const rooti = arma::inv(trimatu(chol_plus_diag(sigma, "upper")));
+  double const rootisum = arma::sum(log(rooti.diag())),
+    constants = -(double)xdim/2.0 * log2pi,
+    other_terms = rootisum + constants;
+
+  arma::rowvec z;
+  for (uword i = 0; i < n; i++) {
+    z = (x.row(i) - mean.t());
+    inplace_tri_mat_mult(z, rooti);
+    out(i) = other_terms - 0.5 * arma::dot(z, z);
+  }
+
+  if (logd)
+    return out;
+  return exp(out);
+}
+//' @keywords internal
+// [[Rcpp::export(name="log_lik")]]
+arma::vec log_lik(const arma::vec& y, const arma::vec& f)
+{
+  int n = y.n_elem;
+  arma::vec out(n);
+  for(int ii = 0; ii < n; ii++)
+  {
+    out[ii] = R::pnorm(y[ii] * f[ii], 0, 1, true, true);
+  }
+  return out;
+}
+//' @keywords internal
+// [[Rcpp::export(name="d_log_lik")]]
+arma::vec d_log_lik(const arma::vec& y, const arma::vec& f)
+{
+  int n = y.n_elem;
+  arma::vec out(n);
+  for(int ii = 0; ii < n; ii++)
+  {
+    //out[ii] = y[ii] * R::dnorm(f[ii], 0, 1, false) / R::pnorm(y[ii] * f[ii], 0, 1, true, false);
+    out[ii] = y[ii] * exp(R::dnorm(f[ii], 0, 1, true) - R::pnorm(y[ii] * f[ii], 0, 1, true, true));
+  }
+  return out;
+}
+//' @keywords internal
+// [[Rcpp::export(name="d2_log_lik")]]
+arma::vec d2_log_lik(const arma::vec& y, const arma::vec& f)
+{
+  int n = y.n_elem;
+  arma::vec out(n);
+  for(int ii = 0; ii < n; ii++)
+  {
+    //out[ii] = -pow(R::dnorm(f[ii], 0, 1, false), 2)/pow(R::pnorm(y[ii]*f[ii], 0, 1, true, false),2) -
+    //            y[ii] * f[ii] * R::dnorm(f[ii], 0, 1, false) / R::pnorm(y[ii] * f[ii], 0, 1, true, false);
+    out[ii] = -exp(2 * R::dnorm(f[ii], 0, 1, true) - 2 * R::pnorm(y[ii]*f[ii], 0, 1, true, true) ) -
+      y[ii] * f[ii] * exp( R::dnorm(f[ii], 0, 1, true) - R::pnorm(y[ii] * f[ii], 0, 1, true, true) );
+  }
+  return out;
+}
+
+
+//' @keywords internal
+//[[Rcpp::export]]
+Rcpp::NumericMatrix mat_to_rcpp(arma::mat& X)
+{
+  Rcpp::NumericMatrix A = Rcpp::as<Rcpp::NumericMatrix>(Rcpp::wrap(X));
+  return(A);
+}
+
+//' @keywords internal
+//[[Rcpp::export]]
+arma::mat rcpp_to_mat(Rcpp::NumericMatrix X)
+{
+  arma::mat A = Rcpp::as<arma::mat>(X);
+  return(A);
+}
+//' @keywords internal
+//[[Rcpp::export]]
+Rcpp::NumericVector vec_to_rcpp(arma::vec& x)
+{
+  Rcpp::NumericVector a = Rcpp::as<Rcpp::NumericVector>(Rcpp::wrap(x));
+  return(a);
+}
+//' @keywords internal
+//[[Rcpp::export]]
+arma::vec rcpp_to_vec(Rcpp::NumericVector x)
+{
+  arma::vec A = Rcpp::as<arma::vec>(x);
+  return(A);
+}
+
+
+Rcpp::List laplace_approx(const arma::vec& y, const arma::mat& K)
+{
+  int n = y.n_elem;
+  arma::mat W(n, n, fill::zeros);
+  arma::mat Wsqrt(n, n, fill::zeros);
+  arma::mat L(n, n, fill::zeros);
+  arma::mat I(n, n, fill::eye);
+  arma::mat Sigma(n, n, fill::zeros);
+  arma::mat B(n, n, fill::zeros);
+
+  arma::vec f(n); f.fill(99);
+  arma::vec fnew(n); fnew.fill(0);
+  //Rcpp::Rcout << "Laplace Approxiarma::mation running... \n";
+
+  int ii = 0;
+  double tol = 1e-6;
+  while(mean(pow(f - fnew, 2)) > tol)
+  {
+    f = fnew;
+    W.diag() = - d2_log_lik(y, f);
+    Wsqrt = sqrt(W);
+    B = I + Wsqrt * K * Wsqrt;
+
+    L = chol_plus_diag(B, "lower");
+    arma::mat Lt = L.t();
+    arma::vec b =  W * f + d_log_lik(y, f);
+    arma::vec inv1 = solve(trimatl(L), Wsqrt * K * b);
+    arma::vec a = b - Wsqrt * solve(trimatu(Lt), inv1);
+    fnew = K * a;
+
+    // Should converge in only a few iterations
+    if(ii > 9){
+      break;
+    }
+    ii += 1;
+  }
+
+  Sigma = K - K * Wsqrt * inv_sympd(B) * Wsqrt * K;
+
+  return Rcpp::List::create(
+    Rcpp::Named("f_hat") = fnew,
+    Rcpp::Named("sigma_hat") = Sigma
+  );
+}
+
+
+struct marginal_loop : public RcppParallel::Worker
+{
+  // Set input and output variables
+  const RcppParallel::RVector<double> y;
+  const RcppParallel::RMatrix<double> f_pseudo;
+  const RcppParallel::RMatrix<double> laplace_densities;
+  const RcppParallel::RMatrix<double> prior_densities;
+  RcppParallel::RVector<double> log_pseudo_weights;
+
+  // Create object
+  marginal_loop(const Rcpp::NumericVector y_,
+                const Rcpp::NumericMatrix f_pseudo_,
+                const Rcpp::NumericMatrix laplace_densities_,
+                const Rcpp::NumericMatrix prior_densities_,
+                Rcpp::NumericVector log_pseudo_weights_)
+    : y(y_),
+      f_pseudo(f_pseudo_),
+      laplace_densities(laplace_densities_),
+      prior_densities(prior_densities_),
+      log_pseudo_weights(log_pseudo_weights_) {}
+
+  // Create operator for sections of loop
+  void operator()(std::size_t begin, std::size_t end) {
+    for(std::size_t ii = begin; ii < end; ii++)
+    {
+
+      // Use laplace approximates for sample
+      RcppParallel::RMatrix<double>::Row f_temp = f_pseudo.row(ii);
+
+      // Sum over log probabilities of each element in importance sampling estiarma::mator
+      double log_p_y_giv_f = 0;
+      for(std::size_t jj = 0; jj < y.length(); jj ++)
+      {
+        double yjj = y[jj];
+        double f_temp_jj = f_temp[jj];
+        log_p_y_giv_f += R::pnorm(yjj * f_temp_jj, 0, 1, true, true);
+      }
+      double log_p_f_giv_theta = log(prior_densities[ii]);
+      double log_q_f_giv_y_theta = log(laplace_densities[ii]);
+
+
+      // Combine together based on formula, log_exp_sum comes later
+      log_pseudo_weights[ii] = log_p_y_giv_f + log_p_f_giv_theta - log_q_f_giv_y_theta;
+    }
+
+  }
+
+};
+
+// [[Rcpp::export(name="get_approx_marginal_par")]]
+double get_approx_marginal_par(arma::vec& y, const arma::mat& K, const int nimp, const arma::vec& theta,
+                               const Rcpp::List laplace_approx)
+{
+  int ny = y.n_elem;
+  const arma::vec zero_vec(ny, arma::fill::zeros);
+
+  // Extract output from laplace_approx list
+  arma::mat Lt = laplace_approx["sigma_hat"];
+  arma::vec mu = laplace_approx["f_hat"];
+
+  // Create samples and densities
+  arma::mat f_pseudo = rmvnorm(nimp, mu, Lt);
+  arma::mat laplace_densities = dmvnorm(f_pseudo, mu, Lt, false);
+  arma::mat prior_densities = dmvnorm(f_pseudo, zero_vec, K, false);
+
+  // Convert matrices to Rcpp for parallel worker
+  Rcpp::NumericMatrix f_pseudo_nm = mat_to_rcpp(f_pseudo);
+  Rcpp::NumericMatrix laplace_densities_nm = mat_to_rcpp(laplace_densities);
+  Rcpp::NumericMatrix prior_densities_nm = mat_to_rcpp(prior_densities);
+  Rcpp::NumericVector y_nv = vec_to_rcpp(y);
+
+  // Call parallelFor to loop over nimp samples
+  Rcpp::NumericVector log_pseudo_weights(nimp);
+  marginal_loop obj(y_nv, f_pseudo_nm, laplace_densities_nm,
+                    prior_densities_nm, log_pseudo_weights);
+  parallelFor(0, nimp, obj);
+
+  // Convert output back to an arma vec
+  arma::vec log_pseudo_weights_a = rcpp_to_vec(log_pseudo_weights);
+
+  // Retrieve log prob by log exp sum
+  double out = log_sum(log_pseudo_weights - log(nimp));
+
+  return(out);
+}
+
+
+double  get_approx_marginal(const arma::vec y, const arma::mat& K, const int nimp, const arma::vec theta,
+                           const Rcpp::List laplace_approx)
+{
+  int ny = y.n_elem;
+  const arma::vec zero_vec(ny, fill::zeros);
+
+  // Extract output from laplace_approx list
+  arma::mat Lt = laplace_approx["sigma_hat"];
+  arma::vec mu = laplace_approx["f_hat"];
+  arma::mat f_pseudo = rmvnorm(nimp, mu, Lt);
+
+  // construct arma::vector which we will log exp sum over
+  arma::vec log_pseudo_weights(nimp);
+  for(int ii = 0; ii < nimp; ii++)
+  {
+    arma::vec log_p_y_giv_theta(ny);
+
+    // Use laplace approxiarma::mates for sample
+    arma::mat f_temp = f_pseudo.row(ii);
+    arma::vec laplace_density = dmvnorm(f_temp, mu, Lt, false);
+      arma::vec prior_density = dmvnorm(f_temp, zero_vec, K, false);
+
+    // Sum over log probabilities of each element in importance sampling estiarma::mator
+    double log_p_y_giv_f = 0;
+    for(int jj = 0; jj < ny; jj ++)
+    {
+      log_p_y_giv_f += R::pnorm(y(jj) * f_temp(jj), 0, 1, true, true);
+    }
+    double log_p_f_giv_theta = log(prior_density(0));
+    double log_q_f_giv_y_theta = log(laplace_density(0));
+
+    //Rcpp::Rcout << laplace_density;
+
+    // Combine together based on formula, log_exp_sum comes later
+    log_pseudo_weights(ii) = log_p_y_giv_f + log_p_f_giv_theta - log_q_f_giv_y_theta - log(nimp);
+  }
+
+
+  // Retrieve log prob by log exp sum
+  double out = log_sum(log_pseudo_weights);
+  return(out);
+}
+// [[Rcpp::export(name="ell_ss_sample")]]
+arma::vec ell_ss_sample(const arma::vec& y, const arma::vec& f, arma::mat& K){
+  int n = K.n_rows;
+  arma::vec zrs(n, fill::zeros);
+  double pi = 3.141592653589793116;
+
+  arma::mat z = rmvnorm(1, zrs, K);
+
+  double u = R::rexp(1);
+  double eta = sum(log_lik(y, f)) - u;
+
+  double alpha = R::runif(0, 2*pi);
+  double alpha_min = alpha - 2*pi;
+  double alpha_max = alpha;
+
+  arma::vec f_prop = f * cos(alpha) + z.t() * sin(alpha);
+
+  while(sum(log_lik(y, f_prop)) < eta)
+  {
+
+    if(alpha < 0){
+      alpha_min = 0;
+    }
+    if(alpha >= 0){
+      alpha_max = 0;
+    }
+    alpha = R::runif(alpha_min, alpha_max);
+    f_prop = f * cos(alpha) + z.t() * sin(alpha);
+
+    R_CheckUserInterrupt();
+  }
+
+  return f_prop;
+}
+double kernel_gaussian(const arma::vec x, const arma::vec y, arma::vec theta)
+{
+  double out;
+  double magnitude = theta(1);
+  double lengthscale = theta(2);
+
+  out = magnitude * exp(-0.5 / pow(lengthscale, 2) * sum(pow(x - y, 2)));
+
+  return out;
+}
+
+// [[Rcpp::export(name="build_K")]]
+arma::mat build_K(const arma::mat& x, const arma::mat& y, Rcpp::Function k, const arma::vec& theta)
+{
+  int nx = x.n_rows;
+  int ny = y.n_rows;
+  arma::mat K(nx, ny);
+  for(int i = 0; i < nx; i++){
+    for(int j = 0; j < ny; j++){
+      K(i, j) = Rcpp::as<double>(k(x.row(i), y.row(j), theta));
+    }
+  }
+
+  if(nx == ny)
+  {
+    for(int i = 0; i < nx; i++){
+      K(i, i) += 1e-6;
+    }
+  }
+  return K;
+}
+
+
+template <typename InputIterator1>
+inline double kernel_gaussian_eval(InputIterator1 begin1, InputIterator1 end1, double magnitude, double lengthscale) {
+
+  // value to store the sum of squared differences
+  double red = 0;
+
+  // set iterator to beginning of range
+  InputIterator1 it1 = begin1;
+
+  // for each input item
+  while (it1 != end1) {
+
+    // take the value and increment the iterator
+    double d1 = *it1++;
+
+    // sum the entries in the iterator
+    red += d1;
+  }
+
+  return magnitude * std::exp(-0.5 / std::pow(lengthscale, 2) * red);
+}
+
+
+
+struct kernel_eval : public RcppParallel::Worker
+{
+  const RcppParallel::RMatrix<double> x_inp;
+  const RcppParallel::RMatrix<double> y_inp;
+  const double lengthscale;
+  const double magnitude;
+  RcppParallel::RMatrix<double> out;
+
+  kernel_eval(const Rcpp::NumericMatrix x_in_,
+              const Rcpp::NumericMatrix y_in_,
+              double magnitude,
+              double lengthscale,
+              Rcpp::NumericMatrix out_)
+    : x_inp(x_in_),
+      y_inp(y_in_),
+      magnitude(magnitude),
+      lengthscale(lengthscale),
+      out(out_) {}
+
+  void operator()(std::size_t begin, std::size_t end) {
+    for(std::size_t i = begin; i < end; i++){
+      for(std::size_t j = 0; j < y_inp.nrow(); j++){
+
+        RcppParallel::RMatrix<double>::Row row1 = x_inp.row(i);
+        RcppParallel::RMatrix<double>::Row row2 = y_inp.row(j);
+
+        std::vector<double> sq_diff(row1.size());
+        std::transform(row1.begin(), row1.end(),
+                       row2.begin(),
+                       sq_diff.begin(),
+                       [](double x, double y) { return std::pow(x-y, 2); } );
+
+        out(i, j) = kernel_gaussian_eval(sq_diff.begin(), sq_diff.end(), magnitude, lengthscale);
+      }
+    }
+  }
+};
+
+// [[Rcpp::export]]
+arma::mat make_gram_par(arma::mat& x, arma::mat& y, const arma::vec& theta) {
+
+  int n_x = x.n_rows;
+  int n_y = y.n_rows;
+  Rcpp::NumericMatrix x_nm = mat_to_rcpp(x);
+  Rcpp::NumericMatrix y_nm = mat_to_rcpp(y);
+  Rcpp::NumericMatrix out_nm(n_x, n_y);
+
+  double magnitude = theta(0);
+  double lengthscale = theta(1);
+
+  kernel_eval obj(x_nm, y_nm, magnitude, lengthscale, out_nm);
+
+  RcppParallel::parallelFor(0, x_nm.nrow(), obj);
+
+  arma::mat out_mat = rcpp_to_mat(out_nm);
+
+  out_mat.diag() += 1e-3;
+
+  return out_mat;
+}
+
+
+
+
+// [[Rcpp::export(name="algo_1")]]
+Rcpp::List algo_1(arma::vec& y, arma::mat& X, const int& nsteps, const int& nburn, const int& nimp,
+                  const arma::vec& init_theta, const arma::vec& init_marginal_lik, const arma::vec& init_f,
+                  const Rcpp::Function& prior_density,  const Rcpp::Function& kernel,
+                  const Rcpp::Function& prop_dist_sample, const Rcpp::Function& prop_dist_density,
+                  const int print_every, const bool debug, const int chain_no, Rcpp::String kernel_pass)
+{
+
+  int theta_n = init_theta.n_elem;
+  int n = y.n_elem;
+  int d = X.n_cols;
+
+  double acceptance_prob;
+  double acceptance_ratio = 0.0;
+
+  arma::mat K(n, n);
+  arma::mat theta_samples(nsteps, theta_n);
+  arma::mat f_samples(nsteps, n);
+
+
+  // Construct gram matrix (and check for kernel fn or string)
+  const Rcpp::String kernel_is_function = "function";
+  const Rcpp::String kernel_is_gaussian = "gaussian";
+
+  if(kernel_pass == kernel_is_function){
+    K = build_K(X, X, kernel, init_theta);
+  } else if(kernel_pass == kernel_is_gaussian){
+    K = make_gram_par(X, X, init_theta);
+  }
+
+  // Initial step before the loop
+
+  Rcpp::List l_approx = laplace_approx(y, K);
+  double p_tilde = get_approx_marginal_par(y, K, nimp, init_theta, l_approx);
+
+  // for(int i=0; i<n; i++){
+  //   p_tilde(i) = 1e-100;
+  // }
+
+  arma::vec theta = init_theta;
+  arma::vec f = init_f;
+  arma::vec a_probs(nsteps, fill::zeros);
+
+  for(int i = 0; i < nsteps; i++)
+  {
+
+    // New proposal for each theta
+    arma::vec theta_prop(theta_n);
+    arma::vec prior_dens_theta_prop(theta_n);
+    for(int t = 0; t < theta_n; t++)
+    {
+      theta_prop(t) = Rcpp::as<double>(prop_dist_sample(theta(t)));
+      prior_dens_theta_prop(t) = Rcpp::as<double>(prior_density(theta_prop(t)));
+    }
+
+    // Instantly reject theta if it is not in the prior
+    bool theta_prop_in_prior = all(prior_dens_theta_prop != 0);
+    if(theta_prop_in_prior)
+    {
+      // Laplace Approximation and Pseudo Likelihood
+      if(kernel_pass == kernel_is_function){
+        K = build_K(X, X, kernel, theta_prop);
+      } else if(kernel_pass == kernel_is_gaussian){
+        K = make_gram_par(X, X, theta_prop);
+      }
+
+      l_approx = laplace_approx(y, K);
+      double p_tilde_prop = get_approx_marginal_par(y, K, nimp, theta_prop, l_approx);
+
+      bool is_p_tilde_prop_nan = Rcpp::all(Rcpp::is_nan(Rcpp::NumericVector::create(p_tilde_prop)));
+      if(is_p_tilde_prop_nan) p_tilde_prop = p_tilde*2;
+
+      // Acceptance Probability
+      arma::vec prior_densities(theta_n);
+      arma::vec prior_densities_prop(theta_n);
+      arma::vec prop_densities_1(theta_n);
+      arma::vec prop_densities_2(theta_n);
+      for(int t = 0; t < theta_n; t++)
+      {
+        prior_densities(t) = Rcpp::as<double>(prior_density(theta(t)));
+        prior_densities_prop(t) = Rcpp::as<double>(prior_density(theta_prop(t)));
+        prop_densities_1(t) = Rcpp::as<double>(prop_dist_density(theta(t), theta_prop(t)));
+        prop_densities_2(t) = Rcpp::as<double>(prop_dist_density(theta_prop(t), theta(t)));
+      }
+
+      double A = calculate_A(p_tilde_prop, prior_densities_prop, p_tilde,
+                             prior_densities, prop_densities_1, prop_densities_2);
+      a_probs(i) = A;
+
+      // output diagnostics
+      if(debug){
+        Rcpp::Rcout << "theta proposal: " << theta_prop << "\n";
+        Rcpp::Rcout << "p_tilde_prop: " << p_tilde_prop << "\n" <<
+          "prior_densities_prop: " << sum(log((prior_densities_prop))) << "\n" <<
+            "p_tilde: " << p_tilde << "\n" <<
+              "prior_densities: " << sum(log((prior_densities))) << "\n" <<
+                "prop_densities_1: " << sum(log((prop_densities_1))) << "\n" <<
+                  "prop_densities_2: " << sum(log((prop_densities_2))) << "\n" <<
+                    "A: " << A << "\n" <<
+                      "theta proposal: " << theta_prop(0) << ", " << theta_prop(1) << "\n";
+      }
+
+      // find minimum by creating new arma::vector and taking min
+      arma::vec acceptance_vec(2);
+      acceptance_vec(0) = 0;
+      acceptance_vec(1) = A;
+      acceptance_prob = acceptance_vec.min();
+
+      // Accept/Reject
+      double u = log(R::runif(0, 1));
+      if(debug){
+        Rcpp::Rcout << "acceptance prob: " << acceptance_prob << "\n" <<
+          "u: " << u;
+      }
+      if(u < acceptance_prob)
+      {
+        if(debug) {Rcpp::Rcout << " ... accepted! \n";}
+        theta = theta_prop;
+        p_tilde = p_tilde_prop;
+        acceptance_ratio += 1;
+      } else {
+        if(debug) {Rcpp::Rcout << " ... rejected :( \n";}
+      }
+    } else {
+      if(debug) {Rcpp::Rcout << "\n theta proposal missed the prior... rejected :( \n";}
+    }
+
+    // Save whichever theta won into theta_samples
+    for(int t = 0; t < theta_n; t++)
+    {
+      theta_samples(i, t) = theta(t);
+    }
+
+    // Sample f with ELL SS
+    arma::vec ellss = ell_ss_sample(y, f, K);
+    for(int j = 0; j < n; j++)
+    {
+      f(j) = ellss(j);
+      f_samples(i, j) = ellss(j);
+    }
+
+    // Display progress to console (platform independent)
+    if(i == 0 or ((i+1) % print_every) == 0){
+      Rcpp::Rcout  <<  "Chain " << chain_no << " Running: " << i+1 << "/" << nsteps << " iterations completed. "
+                   << "|| Acceptance ratio: " << acceptance_ratio / (i+1) << "\n";
+    }
+    R_CheckUserInterrupt();
+
+  }
+  Rcpp::Rcout << "\nChain completed successfully. \n";
+
+  // Reduce to final (nsteps - nburn) samples
+  f_samples = f_samples.rows(nburn, nsteps-1);
+  theta_samples = theta_samples.rows(nburn, nsteps-1);
+  acceptance_ratio = sum(a_probs.rows(nburn, nsteps-1)) / nsteps;
+
+  return Rcpp::List::create(
+    Rcpp::Named("f_samples") = f_samples,
+    Rcpp::Named("theta_samples") = theta_samples,
+    Rcpp::Named("acceptance_ratio") = acceptance_ratio,
+    Rcpp::Named("probs") = a_probs
+  );
+}
+
+
+// [[Rcpp::export(name="predict_gp")]]
+arma::vec predict_gp(const arma::vec& y, const arma::mat& X, const arma::mat& newdata,
+                     const Rcpp::Function kernel, const Rcpp::List fit, const int print_every){
+
+
+  arma::mat f_samples = fit["f_samples"];
+  arma::mat theta_samples = fit["theta_samples"];
+
+  int nsamples = f_samples.n_rows;
+  int n_new = newdata.n_rows;
+  int n = y.n_elem;
+
+  // Display properties
+  Rcpp::Rcout << "Predicting from GP classification model. \n" <<
+    "Averaging across all " << nsamples << " steps (1 chain). \n" <<
+      "Data length n = " << n << ", dimension d = " << X.n_cols << ".\n" <<
+        "New data length n = " << n_new << ", dimension d = " << newdata.n_cols << ".\n" <<
+          "_____________________________________ \n";
+
+  arma::vec pred(n_new, fill::zeros);
+  arma::vec theta = theta_samples.row(0).t();
+
+  arma::mat K = build_K(X, X, kernel, theta);
+  arma::mat k_star = build_K(X, newdata, kernel, theta);
+  arma::mat k_star_star = build_K(newdata, newdata, kernel, theta);
+  for(int i = 1; i < nsamples; i++)
+  {
+
+    arma::mat sigma_q(n, n, fill::zeros);
+    arma::vec theta = theta_samples.row(i).t();
+    if(any(theta != theta_samples.row(i-1).t()))
+    {
+      arma::mat K = build_K(X, X, kernel, theta);
+      arma::mat k_star = build_K(X, newdata, kernel, theta);
+      arma::mat k_star_star = build_K(newdata, newdata, kernel, theta);
+    }
+
+    arma::vec mu_q = f_samples.row(i).t();
+    sigma_q.diag() = -(d2_log_lik(y, mu_q));
+
+    arma::mat K_inv = inv(K);
+    arma::vec m_star = k_star.t() * K_inv * mu_q;
+    arma::mat s2_star = k_star_star - k_star.t() * K_inv * k_star + k_star.t() *
+      K_inv * sigma_q * K_inv * k_star;
+
+    arma::vec xn = m_star/sqrt(1 + s2_star.diag());
+    for(int j = 0; j < xn.n_elem; j++){
+      pred(j) = pred[j] + R::pnorm(xn[j], 0, 1, true, false);
+    }
+
+    // Display progress to console (platform independent)
+    if(i == 0 or ((i+1) % print_every) == 0){
+      Rcpp::Rcout  <<  "Prediction Averaging: " << i+1 << "/" << nsamples << " steps completed. \n";
+    }
+    R_CheckUserInterrupt();
+  }
+  Rcpp::Rcout << "\n";
+  Rcpp::Rcout << "Completed. \n";
+  pred = pred / nsamples;
+
+  return(pred);
+}
+

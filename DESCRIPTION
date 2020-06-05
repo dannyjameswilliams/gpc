@@ -1,0 +1,17 @@
+Package: gpc
+Type: Package
+Title: What the Package Does in One 'Title Case' Line
+Version: 1.0
+Date: 2020-05-29
+Author: Your Name
+Maintainer: Your Name <your@email.com>
+Description: One paragraph description of what the package does as one or more full sentences.
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.3), RcppParallel
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+SystemRequirements: GNU make
+RoxygenNote: 7.0.2
+Encoding: UTF-8
+Suggests: 
+    testthat (>= 2.1.0)
+Depends: mvtnorm
