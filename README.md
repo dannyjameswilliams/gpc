@@ -21,7 +21,7 @@ You can install the released version of gpc from [github](https://github.com/dan
 
 ``` r
 library(devtools)
-devtools::install_github(https://github.com/dannyjameswilliams/gpc)
+devtools::install_github("https://github.com/dannyjameswilliams/gpc")
 ```
 
 ## Example
