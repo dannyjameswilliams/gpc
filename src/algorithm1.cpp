@@ -50,7 +50,7 @@ Rcpp::List algo_1(arma::vec& y, arma::mat& X, const int& nsteps, const int& nbur
   arma::mat K(n, n);
   arma::mat theta_samples(nsteps, theta_n);
   arma::mat f_samples(nsteps, n);
-
+  arma::vec pm_samples(nsteps);
 
   // Construct gram matrix (and check for kernel fn or string)
   const Rcpp::String kernel_is_function = "function";
@@ -172,7 +172,9 @@ Rcpp::List algo_1(arma::vec& y, arma::mat& X, const int& nsteps, const int& nbur
       f(j) = ellss(j);
       f_samples(i, j) = ellss(j);
     }
+
     // Save approximate marginal likelihood as well
+    pm_samples(i) = p_tilde;
 
     // Display progress to console (platform independent)
     if(i == 0 or ((i+1) % print_every) == 0){
@@ -186,12 +188,14 @@ Rcpp::List algo_1(arma::vec& y, arma::mat& X, const int& nsteps, const int& nbur
 
   // Reduce to final (nsteps - nburn) samples
   f_samples = f_samples.rows(nburn, nsteps-1);
+  pm_samples = pm_samples.rows(nburn, nsteps-1);
   theta_samples = theta_samples.rows(nburn, nsteps-1);
   acceptance_ratio = sum(a_probs.rows(nburn, nsteps-1)) / nsteps;
 
   return Rcpp::List::create(
     Rcpp::Named("f_samples") = f_samples,
     Rcpp::Named("theta_samples") = theta_samples,
+    Rcpp::Named("pm_samples") = pm_samples,
     Rcpp::Named("acceptance_ratio") = acceptance_ratio,
     Rcpp::Named("probs") = a_probs
   );
