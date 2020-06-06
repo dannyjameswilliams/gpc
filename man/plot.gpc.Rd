@@ -9,6 +9,8 @@
 \arguments{
 \item{x}{object of type '\code{gpc}', output from \code{\link{gpc}}}
 
+\item{f}{logical; if \code{TRUE}, plot posteriors of latent variable \code{f}}
+
 \item{...}{further arguments to be passed to plot}
 }
 \value{
