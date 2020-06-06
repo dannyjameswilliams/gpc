@@ -172,6 +172,7 @@ Rcpp::List algo_1(arma::vec& y, arma::mat& X, const int& nsteps, const int& nbur
       f(j) = ellss(j);
       f_samples(i, j) = ellss(j);
     }
+    // Save approximate marginal likelihood as well
 
     // Display progress to console (platform independent)
     if(i == 0 or ((i+1) % print_every) == 0){

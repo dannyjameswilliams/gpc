@@ -17,6 +17,8 @@ proposal_default = function(sd = 1){
 
 #' Fit Gaussian Process Classification Model
 #'
+#' Wrapper function for the Rcpp implementation of fitting a Gaussian process classification model
+#'
 #' @param y binary output vector in {-1, +1}
 #' @param X predictor matrix
 #' @param nsteps number of iterations to run the MCMC sampler for
@@ -67,7 +69,7 @@ gpc = function(y, X, nsteps, nburn, nchains, nimp, init_theta, kernel = "gaussia
 
   cat("Fitting a GP classification model. \n")
   cat("Running with", nchains, "chain,", nsteps, "steps. \n")
-  cat("Data length n = ", n, ", dimension d = ", d, ".\n", sep="")
+  cat("Data length n = ", n, ", dimension p = ", d, ".\n", sep="")
   cat("Number of hyperparameters: ", p, "\n")
   cat("_____________________________________ \n")
 
@@ -96,6 +98,7 @@ gpc = function(y, X, nsteps, nburn, nchains, nimp, init_theta, kernel = "gaussia
   samples_out$prior = prior
   samples_out$proposal = proposal
   samples_out$print_every = print_every
+  samples_out$kernel_pass = kernel_pass
 
   class(samples_out) = "gpc"
 
@@ -106,14 +109,18 @@ gpc = function(y, X, nsteps, nburn, nchains, nimp, init_theta, kernel = "gaussia
 #' Plot Gaussian Process Classification Model
 #'
 #' @param x object of type '\code{gpc}', output from \code{\link{gpc}}
+#' @param f logical; if \code{TRUE}, plot posteriors of latent variable \code{f}
 #' @param ... further arguments to be passed to plot
 #'
 #' @return
 #' trace and density plot of the model fit
 #'
 #' @importFrom graphics par plot lines
-#' @importFrom stat density
+#' @importFrom stats density
 #' @importFrom grDevices hcl
+#'
+#' @rawNamespace S3method(plot, gpc)
+#'
 #' @export
 plot.gpc = function(x, f = FALSE, ...){
   theta_var = paste0("theta[",1:x$p,"]")
@@ -188,6 +195,9 @@ plot.gpc = function(x, f = FALSE, ...){
 #' @param ... further arguments to be passed to print
 #'
 #' @importFrom stats median var quantile
+#'
+#' @rawNamespace S3method(print, gpc)
+#'
 #' @export
 print.gpc = function(x, ...){
   nsteps = nrow(x$chain1)
@@ -225,6 +235,7 @@ print.gpc = function(x, ...){
 #' @return
 #' a vector of probabilities corresponding to the positive and negative class
 #'
+#' @rawNamespace S3method(predict, gpc)
 #' @export
 predict.gpc = function(object, newdata, ...){
   if(!is.matrix(newdata)) newdata = as.matrix(newdata)
@@ -239,6 +250,9 @@ predict.gpc = function(object, newdata, ...){
     }
   }
   fit_all_chains = list(f_samples = f_all, theta_samples = theta_all)
-  pred = predict_gp(object$y, object$X, newdata, object$kernel, fit_all_chains, object$print_every)
+  pred = predict_gp(object$y, object$X, newdata,
+                    object$kernel, fit_all_chains,
+                    object$nchains, object$kernel_pass,
+                    object$print_every)
   return(pred)
 }

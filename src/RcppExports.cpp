@@ -178,8 +178,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // predict_gp
-arma::vec predict_gp(const arma::vec& y, arma::mat& X, arma::mat& newdata, const Rcpp::Function kernel, const Rcpp::List fit, const int print_every);
-RcppExport SEXP _gpc_predict_gp(SEXP ySEXP, SEXP XSEXP, SEXP newdataSEXP, SEXP kernelSEXP, SEXP fitSEXP, SEXP print_everySEXP) {
+arma::vec predict_gp(const arma::vec& y, arma::mat& X, arma::mat& newdata, const Rcpp::Function kernel, const Rcpp::List fit, const int nchains, const Rcpp::String kernel_pass, const int print_every);
+RcppExport SEXP _gpc_predict_gp(SEXP ySEXP, SEXP XSEXP, SEXP newdataSEXP, SEXP kernelSEXP, SEXP fitSEXP, SEXP nchainsSEXP, SEXP kernel_passSEXP, SEXP print_everySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -188,8 +188,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat& >::type newdata(newdataSEXP);
     Rcpp::traits::input_parameter< const Rcpp::Function >::type kernel(kernelSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List >::type fit(fitSEXP);
+    Rcpp::traits::input_parameter< const int >::type nchains(nchainsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String >::type kernel_pass(kernel_passSEXP);
     Rcpp::traits::input_parameter< const int >::type print_every(print_everySEXP);
-    rcpp_result_gen = Rcpp::wrap(predict_gp(y, X, newdata, kernel, fit, print_every));
+    rcpp_result_gen = Rcpp::wrap(predict_gp(y, X, newdata, kernel, fit, nchains, kernel_pass, print_every));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -251,7 +253,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gpc_d2_log_lik", (DL_FUNC) &_gpc_d2_log_lik, 2},
     {"_gpc_rmvnorm", (DL_FUNC) &_gpc_rmvnorm, 3},
     {"_gpc_dmvnorm", (DL_FUNC) &_gpc_dmvnorm, 4},
-    {"_gpc_predict_gp", (DL_FUNC) &_gpc_predict_gp, 6},
+    {"_gpc_predict_gp", (DL_FUNC) &_gpc_predict_gp, 8},
     {"_gpc_mat_to_rcpp", (DL_FUNC) &_gpc_mat_to_rcpp, 1},
     {"_gpc_rcpp_to_mat", (DL_FUNC) &_gpc_rcpp_to_mat, 1},
     {"_gpc_vec_to_rcpp", (DL_FUNC) &_gpc_vec_to_rcpp, 1},

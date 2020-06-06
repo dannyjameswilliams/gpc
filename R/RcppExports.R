@@ -155,12 +155,14 @@ dmvnorm_cpp <- function(x, mean, sigma, logd) {
 #' @param newdata new data to predict from, same dimension as \code{X}
 #' @param kernel R function taking two inputs to calculate the kernel matrix
 #' @param fit list containing samples from the mcmc chains for \code{f} and \code{theta}
+#' @param nchains number of chains used in fitting model
+#' @param kernel_pass string containing information on what the kernel type is (decides parallel operations)
 #' @param print_every number of steps until progress is printed to the console
 #'
 #' @return fitted probabilities corresponding to the positive and negative class for each data point in \code{newdata}
 #'
-predict_gp <- function(y, X, newdata, kernel, fit, print_every) {
-    .Call(`_gpc_predict_gp`, y, X, newdata, kernel, fit, print_every)
+predict_gp <- function(y, X, newdata, kernel, fit, nchains, kernel_pass, print_every) {
+    .Call(`_gpc_predict_gp`, y, X, newdata, kernel, fit, nchains, kernel_pass, print_every)
 }
 
 #' @keywords internal

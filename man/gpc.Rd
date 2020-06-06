@@ -54,7 +54,7 @@ gpc(
 An object of type '\code{gpc}', containing elements of the model fit and samples given for all chains.
 }
 \description{
-Fit Gaussian Process Classification Model
+Wrapper function for the Rcpp implementation of fitting a Gaussian process classification model
 }
 \details{
 This is a wrapper function for \code{\link{algo_1}}, which can take default arguments and calls

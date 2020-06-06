@@ -4,7 +4,7 @@
 \alias{predict_gp}
 \title{Rcpp Predict Gaussian Process Classification using MCMC}
 \usage{
-predict_gp(y, X, newdata, kernel, fit, print_every)
+predict_gp(y, X, newdata, kernel, fit, nchains, kernel_pass, print_every)
 }
 \arguments{
 \item{y}{binary output vector in {-1, +1}}
@@ -16,6 +16,10 @@ predict_gp(y, X, newdata, kernel, fit, print_every)
 \item{kernel}{R function taking two inputs to calculate the kernel matrix}
 
 \item{fit}{list containing samples from the mcmc chains for \code{f} and \code{theta}}
+
+\item{nchains}{number of chains used in fitting model}
+
+\item{kernel_pass}{string containing information on what the kernel type is (decides parallel operations)}
 
 \item{print_every}{number of steps until progress is printed to the console}
 }
