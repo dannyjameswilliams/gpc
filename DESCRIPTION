@@ -17,4 +17,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-Depends: mvtnorm
+Depends: mvtnorm, R (>= 3.5.0)
