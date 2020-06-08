@@ -22,7 +22,7 @@ matrix:
         - R CMD build --no-resave-data --no-build-vignettes .
         - travis_wait R CMD check "${PKG_TARBALL}" --as-cran --no-build-vignettes --ignore-vignettes --use-valgrind; CHECK_RET=$?
 
-r_check_args: --no-build-vignettes --ignore-vignettes
+r_check_args: --as-cran --no-build-vignettes --ignore-vignettes
 
 r_packages:
   - covr
