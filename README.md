@@ -2,6 +2,7 @@
 # gpc
 
 <!-- badges: start -->
+[![Build Status](https://travis-ci.com/dannyjameswilliams/gpc.svg?branch=master)](https://travis-ci.com/dannyjameswilliams/gpc)   [![codecov](https://codecov.io/gh/dannyjameswilliams/gpc/branch/master/graph/badge.svg)](https://codecov.io/gh/dannyjameswilliams/gpc)
 <!-- badges: end -->
 
 A [fast, sparse,](https://papers.nips.cc/paper/2240-fast-sparse-gaussian-process-methods-the-informative-vector-machine.pdf) parallel implementation of [Pseudo-Marginal Inference for
