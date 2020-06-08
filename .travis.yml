@@ -2,7 +2,7 @@ language: r
 
 warnings_are_errors: false
 
-r_check_args: "--no-build-vignettes --ignore-vignettes"
+r_check_args: --no-build-vignettes --ignore-vignettes
 
 r_packages:
   - covr
