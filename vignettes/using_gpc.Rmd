@@ -2,7 +2,7 @@
 title: "Using the gpc package"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using the gpc package}
+  %\VignetteIndexEntry{using_gpc}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
