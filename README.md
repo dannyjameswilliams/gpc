@@ -23,6 +23,7 @@ You can install the released version of `gpc` from [github](https://github.com/d
 library(devtools)
 install_github("dannyjameswilliams/gpc", build_vignettes = TRUE)
 ```
+Alternatively, the package can be installed faster without building the vignettes by changing the second argument to `FALSE`.
 
 ## Package Contents
 
@@ -32,4 +33,4 @@ To see an example of the code, as well as a step-by-step tutorial for its implem
 ```r
 vignette(package="gpc")
 ```
-once the package has installed.
+once the package has installed, provided the argument `build_vignettes=TRUE` was specified.
