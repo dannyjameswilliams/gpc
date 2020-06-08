@@ -1,3 +1,11 @@
 language: r
+
 warnings_are_errors: false
+
 r_check_args: "--no-build-vignettes --ignore-vignettes"
+
+r_packages:
+  - covr
+
+after_success:
+  - Rscript -e 'library(covr); codecov()'
