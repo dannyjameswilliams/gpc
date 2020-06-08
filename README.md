@@ -17,26 +17,19 @@ Jake Spiteri `jake.spiteri@bristol.ac.uk`
 
 ## Installation
 
-You can install the released version of gpc from [github](https://github.com/dannyjameswilliams/gpc) with:
+You can install the released version of `gpc` from [github](https://github.com/dannyjameswilliams/gpc) with:
 
 ``` r
 library(devtools)
-devtools::install_github("https://github.com/dannyjameswilliams/gpc")
+install_github("dannyjameswilliams/gpc", build_vignettes = TRUE)
 ```
 
-## Example
+## Package Contents
 
-This is a basic example which demonstrates using the core `gpc` function on bundled data
+The package contains software to efficiently fit a Gaussian process classification (gpc) mdoel, using `Rcpp` and `RcppParallel`. We also have included the e-mail spam dataset used for classification.
 
-``` r
-library(gpc)
-load("data/spam.Rdata") #load spam data analysis
-
-fit <- gpc(y = y_train,X= as.matrix(X_train), 
-  nsteps= 100,nburn= 0,nchains= 1,nimp= 100,init_theta= c(1,1),kernel= f,
-  print_every = 10, debug = FALSE) #fit model
-  
-print(fit) #print method
-plot(fit) #plot method
+To see an example of the code, as well as a step-by-step tutorial for its implementation, see the vignette `using_gpc`, provided as an HTML document you can view in this repository, or by running
+```r
+vignette(package="gpc")
 ```
-
+once the package has installed.
