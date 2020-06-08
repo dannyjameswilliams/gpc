@@ -114,6 +114,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dmvnorm
+arma::vec dmvnorm(arma::mat const& x, arma::vec const& mean, arma::mat sigma, bool const logd);
+RcppExport SEXP _gpc_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP logdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool const >::type logd(logdSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm(x, mean, sigma, logd));
+    return rcpp_result_gen;
+END_RCPP
+}
 // predict_gp
 arma::vec predict_gp(const arma::vec& y, arma::mat& X, arma::mat& newdata, const Rcpp::Function kernel, const Rcpp::List fit, const int nchains, const Rcpp::String kernel_pass, const int print_every);
 RcppExport SEXP _gpc_predict_gp(SEXP ySEXP, SEXP XSEXP, SEXP newdataSEXP, SEXP kernelSEXP, SEXP fitSEXP, SEXP nchainsSEXP, SEXP kernel_passSEXP, SEXP print_everySEXP) {
@@ -132,6 +146,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// chol_plus_diag
+arma::mat chol_plus_diag(arma::mat& A, Rcpp::String type);
+RcppExport SEXP _gpc_chol_plus_diag(SEXP ASEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(chol_plus_diag(A, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gpc_algo_1", (DL_FUNC) &_gpc_algo_1, 16},
@@ -141,7 +167,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gpc_build_K", (DL_FUNC) &_gpc_build_K, 4},
     {"_gpc_make_gram_par", (DL_FUNC) &_gpc_make_gram_par, 3},
     {"_gpc_laplace_approx", (DL_FUNC) &_gpc_laplace_approx, 2},
+    {"_gpc_dmvnorm", (DL_FUNC) &_gpc_dmvnorm, 4},
     {"_gpc_predict_gp", (DL_FUNC) &_gpc_predict_gp, 8},
+    {"_gpc_chol_plus_diag", (DL_FUNC) &_gpc_chol_plus_diag, 2},
     {NULL, NULL, 0}
 };
 

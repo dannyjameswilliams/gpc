@@ -9,18 +9,6 @@
 
 using namespace arma;
 
-
-double kernel_gaussian(const arma::vec x, const arma::vec y, arma::vec theta)
-{
-  double out;
-  double magnitude = theta(1);
-  double lengthscale = theta(2);
-
-  out = magnitude * exp(-0.5 / pow(lengthscale, 2) * sum(pow(x - y, 2)));
-
-  return out;
-}
-
 //' Make Gram Matrix
 //'
 //' Compute the Gram (covariance) matrix

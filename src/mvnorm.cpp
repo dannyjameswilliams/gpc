@@ -10,6 +10,7 @@ arma::mat rmvnorm(int n, arma::vec& mu, arma::mat& sigma) {
   return arma::repmat(mu, 1, n).t() + Y * chol_plus_diag(sigma, "upper");
 }
 //' @keywords internal
+//[[Rcpp::export]]
 arma::vec dmvnorm(arma::mat const &x,
   arma::vec const &mean,
   arma::mat sigma,

@@ -5,6 +5,7 @@ using namespace arma;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 //' @keywords internal
+// [[Rcpp::export]]
 arma::mat chol_plus_diag(arma::mat& A, Rcpp::String type)
 {
   bool success = false;
@@ -24,17 +25,6 @@ arma::mat chol_plus_diag(arma::mat& A, Rcpp::String type)
     R_CheckUserInterrupt();
   }
   return(L);
-}
-//' @keywords internal
-double prod(vec a)
-{
-  int n = a.n_elem;
-  double tmp = 1;
-  for(int i = 0; i < n; i++)
-  {
-    tmp = tmp*a[i];
-  }
-  return(tmp);
 }
 //' @keywords internal
 double calculate_A(const double& p_tilde_prop,const vec& prior_densities_prop,const double& p_tilde,

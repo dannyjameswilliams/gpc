@@ -169,6 +169,14 @@ laplace_approx <- function(y, K) {
     .Call(`_gpc_laplace_approx`, y, K)
 }
 
+#' @keywords internal
+NULL
+
+#' @keywords internal
+dmvnorm <- function(x, mean, sigma, logd) {
+    .Call(`_gpc_dmvnorm`, x, mean, sigma, logd)
+}
+
 #' Rcpp Predict Gaussian Process Classification using MCMC
 #'
 #' Pseudo marginal approach to fitting a Gaussian process classification model using Markov Chain Monte Carlo (MCMC)
@@ -198,8 +206,7 @@ NULL
 NULL
 
 #' @keywords internal
-NULL
-
-#' @keywords internal
-NULL
+chol_plus_diag <- function(A, type) {
+    .Call(`_gpc_chol_plus_diag`, A, type)
+}
 
