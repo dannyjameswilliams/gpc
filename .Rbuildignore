@@ -3,3 +3,4 @@
 NAMESPACE2
 using_gpc.html
 codecov.yml
+.travis.yml
