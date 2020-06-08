@@ -23,7 +23,7 @@ matrix:
         - travis_wait R CMD check "${PKG_TARBALL}" --as-cran --no-build-vignettes --ignore-vignettes --use-valgrind; CHECK_RET=$?
 
 r_check_args: --as-cran --no-build-vignettes --ignore-vignettes
-
+r_build_args: --as-cran --no-build-vignettes --ignore-vignettes
 r_packages:
   - covr
 
