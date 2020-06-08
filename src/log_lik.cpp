@@ -3,7 +3,6 @@
 
 using namespace arma;
 //' @keywords internal
-// [[Rcpp::export(name="log_lik")]]
 arma::vec log_lik(const arma::vec& y, const arma::vec& f)
 {
   int n = y.n_elem;
@@ -15,7 +14,6 @@ arma::vec log_lik(const arma::vec& y, const arma::vec& f)
   return out;
 }
 //' @keywords internal
-// [[Rcpp::export(name="d_log_lik")]]
 arma::vec d_log_lik(const arma::vec& y, const arma::vec& f)
 {
   int n = y.n_elem;
@@ -28,7 +26,6 @@ arma::vec d_log_lik(const arma::vec& y, const arma::vec& f)
   return out;
 }
 //' @keywords internal
-// [[Rcpp::export(name="d2_log_lik")]]
 arma::vec d2_log_lik(const arma::vec& y, const arma::vec& f)
 {
   int n = y.n_elem;

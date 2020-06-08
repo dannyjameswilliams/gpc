@@ -51,7 +51,12 @@ gpc(
 \item{debug}{logical; if \code{TRUE} then debugging information is printed to the console at each step}
 }
 \value{
-An object of type '\code{gpc}', containing elements of the model fit and samples given for all chains.
+An object of type '\code{gpc}', containing elements of the model fit and samples given for all chains for
+\describe{
+\item{theta_samples}{accepted samples of the hyperparameter vector}
+\item{f_samples}{samples of the latent variable}
+\item{pm_samples}{samples of the log sum of pseudo marginal approximation evaluations}
+}
 }
 \description{
 Wrapper function for the Rcpp implementation of fitting a Gaussian process classification model

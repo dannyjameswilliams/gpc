@@ -53,12 +53,34 @@ algo_1 <- function(y, X, nsteps, nburn, nimp, init_theta, init_marginal_lik, ini
 #' \tilde{p} (y | \theta) \approx 1 / N_{imp} \sum^{N_{imp}}_{i=1} p(y | f_i) p(f_i | \theta) / q(f | y, \theta)
 #' }
 #' In this case, the approximating distribution \eqn{q(f | y, \theta)} is given by the laplace approximation,
-#' which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and p(f | \theta) is the prior density.
+#' which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and \eqn{p(f | \theta)} is the prior density.
 #'
 get_approx_marginal <- function(y, K, nimp, theta, laplace_approx) {
     .Call(`_gpc_get_approx_marginal`, y, K, nimp, theta, laplace_approx)
 }
 
+#' Get Pseudo Marginal Likelihood (Parallel)
+#'
+#' Unbiased estimation of \eqn{p(y | \theta)} using importance sampling, implemented in parallel.
+#'
+#' @param y binary output vector in -1, +1
+#' @param K Gram matrix
+#' @param nimp number of samples in importance sampling to approximate the marginal likelihood
+#' @param theta hyperparameter vector
+#' @param laplace_approx list containing \code{f_hat} and \code{sigma_hat}, output from \code{\link{laplace_approx}}
+#'
+#' @return a single value, the log sum of the pseudo weights.
+#'
+#' @details
+#' This performs the same operations as \code{\link{get_approx_marginal}}, but implemented in parallel with \code{RcppParallel}.
+#'
+#' Using the approximating distribution \eqn{q(f | y, \theta)}, the unbiased estimate of the marginal can be given as
+#' \deqn{
+#' \tilde{p} (y | \theta) \approx 1 / N_{imp} \sum^{N_{imp}}_{i=1} p(y | f_i) p(f_i | \theta) / q(f | y, \theta)
+#' }
+#' In this case, the approximating distribution \eqn{q(f | y, \theta)} is given by the laplace approximation,
+#' which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and \eqn{p(f | \theta)} is the prior density.
+#'
 get_approx_marginal_par <- function(y, K, nimp, theta, laplace_approx) {
     .Call(`_gpc_get_approx_marginal_par`, y, K, nimp, theta, laplace_approx)
 }
@@ -81,10 +103,36 @@ ell_ss_sample <- function(y, f, K) {
     .Call(`_gpc_ell_ss_sample`, y, f, K)
 }
 
+#' Make Gram Matrix
+#'
+#' Compute the Gram (covariance) matrix
+#'
+#' @param x input matrix 1
+#' @param y input matrix 2
+#' @param k R function to apply covariance function for elements of \code{x} and \code{y}
+#' @param theta hyperparameter vector to input to \code{k}
+#'
+#' @details
+#' The kernel function \code{k} needs to have arguments corresponding to  \code{x}, \code{y}, \code{theta} in that order.
+#'
+#' \code{build_K} computes the gram matrix for a given \code{k}. For a faster, parallel approach,
+#' \code{make_gram_par} uses a pre-determined Gaussian covariance function.
+#'
 build_K <- function(x, y, k, theta) {
     .Call(`_gpc_build_K`, x, y, k, theta)
 }
 
+#' Make Gram Matrix (Gaussian covariance)
+#'
+#' Compute the Gram (covariance) matrix in parallel with a Gaussian covariance function
+#'
+#' @param x input matrix 1
+#' @param y input matrix 2
+#' @param theta hyperparameter vector
+#'
+#' @details
+#' This is a faster, parallel approach to build the Gram matrix using a pre-determined Gaussian covariance function.
+#' \code{build_K} computes the gram matrix for a given \code{k}, but is slower and not in parallel.
 make_gram_par <- function(x, y, theta) {
     .Call(`_gpc_make_gram_par`, x, y, theta)
 }
@@ -121,31 +169,6 @@ laplace_approx <- function(y, K) {
     .Call(`_gpc_laplace_approx`, y, K)
 }
 
-#' @keywords internal
-log_lik <- function(y, f) {
-    .Call(`_gpc_log_lik`, y, f)
-}
-
-#' @keywords internal
-d_log_lik <- function(y, f) {
-    .Call(`_gpc_d_log_lik`, y, f)
-}
-
-#' @keywords internal
-d2_log_lik <- function(y, f) {
-    .Call(`_gpc_d2_log_lik`, y, f)
-}
-
-#' @keywords internal
-rmvnorm_cpp <- function(n, mu, sigma) {
-    .Call(`_gpc_rmvnorm`, n, mu, sigma)
-}
-
-#' @keywords internal
-dmvnorm_cpp <- function(x, mean, sigma, logd) {
-    .Call(`_gpc_dmvnorm`, x, mean, sigma, logd)
-}
-
 #' Rcpp Predict Gaussian Process Classification using MCMC
 #'
 #' Pseudo marginal approach to fitting a Gaussian process classification model using Markov Chain Monte Carlo (MCMC)
@@ -163,26 +186,6 @@ dmvnorm_cpp <- function(x, mean, sigma, logd) {
 #'
 predict_gp <- function(y, X, newdata, kernel, fit, nchains, kernel_pass, print_every) {
     .Call(`_gpc_predict_gp`, y, X, newdata, kernel, fit, nchains, kernel_pass, print_every)
-}
-
-#' @keywords internal
-mat_to_rcpp <- function(X) {
-    .Call(`_gpc_mat_to_rcpp`, X)
-}
-
-#' @keywords internal
-rcpp_to_mat <- function(X) {
-    .Call(`_gpc_rcpp_to_mat`, X)
-}
-
-#' @keywords internal
-vec_to_rcpp <- function(x) {
-    .Call(`_gpc_vec_to_rcpp`, x)
-}
-
-#' @keywords internal
-rcpp_to_vec <- function(x) {
-    .Call(`_gpc_rcpp_to_vec`, x)
 }
 
 #' @keywords internal

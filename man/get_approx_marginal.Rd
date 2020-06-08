@@ -29,5 +29,5 @@ Using the approximating distribution \eqn{q(f | y, \theta)}, the unbiased estima
 \tilde{p} (y | \theta) \approx 1 / N_{imp} \sum^{N_{imp}}_{i=1} p(y | f_i) p(f_i | \theta) / q(f | y, \theta)
 }
 In this case, the approximating distribution \eqn{q(f | y, \theta)} is given by the laplace approximation,
-which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and p(f | \theta) is the prior density.
+which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and \eqn{p(f | \theta)} is the prior density.
 }

@@ -1,11 +1,11 @@
 Package: gpc
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
+Title: Gaussian Process Classification
 Version: 1.0
 Date: 2020-05-29
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package does as one or more full sentences.
+Author: Jake Spiteri, Daniel Williams, Dom Owens
+Maintainer: Daniel Williams <daniel.williams@bristol.ac.uk>
+Description: Fit a Gaussian Process Classification Model using pseudo marginal approximation for the likelihood. Implemented in Rcpp and RcppParallel.
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.3), RcppParallel
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel
@@ -13,5 +13,8 @@ SystemRequirements: GNU make
 RoxygenNote: 7.0.2
 Encoding: UTF-8
 Suggests: 
-    testthat (>= 2.1.0)
+    testthat (>= 2.1.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Depends: mvtnorm

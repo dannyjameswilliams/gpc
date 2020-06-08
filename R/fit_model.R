@@ -1,17 +1,40 @@
 #' @importFrom stats dgamma rgamma
-#' @keywords internal
+#' @rdname default_distributions
+#' @export
 prior_default = function(shape = 5, rate = 5){
   prior_dens = function(x) dgamma(x, shape, rate)
   prior_samp = function(x) rgamma(1, shape, rate)
   return(list(density = prior_dens, sample = prior_samp))
 }
-#' @importFrom stats dnorm rnorm
-#' @keywords internal
+#' @importFrom stats rnorm dnorm
+#' @rdname default_distributions
+#' @export
 proposal_default = function(sd = 1){
   prop_dist_samp = function(x) rnorm(1, x, sd)
   prop_dist_dens = function(x, theta) dnorm(x, theta, sd)
   return(list(density = prop_dist_dens, sample = prop_dist_samp))
 }
+
+#' Default proposal and prior distributions
+#'
+#' Pre-set distributions to sample and take density from the prior/proposal
+#'
+#' @param shape shape parameter of the gamma distribution (prior)
+#' @param rate rate of the gamma distribution (prior)
+#' @param sd standard deviation of the Gaussian distribution (proposal)
+#'
+#' @details
+#' These functions both appear as arguments to \code{\link{gpc}}. These can be called again as arguments
+#' if the user wants to define different parameters of the distributions.
+#'
+#' These can also be used to create different proposals, you need to copy the format
+#' of these functions.
+#'
+#' The default priors are a gamma distribution with \code{rate} and \code{shape} equal to 5.
+#' The default proposal distribution is a Gaussian distribution with standard deviation 1.
+#'
+#' @name default_distributions
+NULL
 
 
 

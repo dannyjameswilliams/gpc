@@ -22,7 +22,7 @@
 //' \tilde{p} (y | \theta) \approx 1 / N_{imp} \sum^{N_{imp}}_{i=1} p(y | f_i) p(f_i | \theta) / q(f | y, \theta)
 //' }
 //' In this case, the approximating distribution \eqn{q(f | y, \theta)} is given by the laplace approximation,
-//' which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and p(f | \theta) is the prior density.
+//' which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and \eqn{p(f | \theta)} is the prior density.
 //'
 // [[Rcpp::export(name="get_approx_marginal")]]
 double get_approx_marginal(const arma::vec y, const arma::mat& K, const int nimp, const arma::vec theta,
@@ -118,6 +118,28 @@ struct marginal_loop : public RcppParallel::Worker
 
 };
 
+//' Get Pseudo Marginal Likelihood (Parallel)
+//'
+//' Unbiased estimation of \eqn{p(y | \theta)} using importance sampling, implemented in parallel.
+//'
+//' @param y binary output vector in -1, +1
+//' @param K Gram matrix
+//' @param nimp number of samples in importance sampling to approximate the marginal likelihood
+//' @param theta hyperparameter vector
+//' @param laplace_approx list containing \code{f_hat} and \code{sigma_hat}, output from \code{\link{laplace_approx}}
+//'
+//' @return a single value, the log sum of the pseudo weights.
+//'
+//' @details
+//' This performs the same operations as \code{\link{get_approx_marginal}}, but implemented in parallel with \code{RcppParallel}.
+//'
+//' Using the approximating distribution \eqn{q(f | y, \theta)}, the unbiased estimate of the marginal can be given as
+//' \deqn{
+//' \tilde{p} (y | \theta) \approx 1 / N_{imp} \sum^{N_{imp}}_{i=1} p(y | f_i) p(f_i | \theta) / q(f | y, \theta)
+//' }
+//' In this case, the approximating distribution \eqn{q(f | y, \theta)} is given by the laplace approximation,
+//' which is calculated in \code{\link{laplace_approx}}, \eqn{p(y | f)} is the likelihood and \eqn{p(f | \theta)} is the prior density.
+//'
 // [[Rcpp::export(name="get_approx_marginal_par")]]
 double get_approx_marginal_par(arma::vec& y, const arma::mat& K, const int nimp, const arma::vec& theta,
   const Rcpp::List laplace_approx)

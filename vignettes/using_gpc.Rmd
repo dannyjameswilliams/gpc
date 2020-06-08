@@ -1,0 +1,139 @@
+---
+title: "Using the gpc package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using the gpc package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This package is presented as an accompaniment for the group project report for the COMPASS CDT, entitled *Pseudo-Marginal Inference for Gaussian Process Classification with Large Datasets*.
+
+This package provides functionality to 
+
+ - Choose an optimal subset of data that maximises the potential entropy score for a dataset, using the Information Vector Machine (IVM) algorithm (`ivm_subset_selection`)
+ - Fit a Gaussian process classification model (`gpc`)
+ - Plot, print and predict from this Gaussian process classification model ( `plot.gpc`, `print.gpc` and `predict.gpc`)
+
+```{r setup}
+library(gpc)
+```
+ 
+ 
+## Usage on the Spam Dataset
+
+In the report, we show that this classification model provides a more accurate classification of the binary problem encountered in the e-mail spam dataset. The problem is as follows: Given a large dataset of emails, with their corresponding word and character frequencies for different cases, can we accurately predict whether a particular e-mail is spam or not spam?
+
+### Loading the Data and Taking a Subset
+
+We have provided access to the spam dataset as part of the package, which can be run with
+```{r}
+data(spam)
+```
+And format out the response and the predictor variables, as well as divide into testing and training datasets.
+```{r}
+cut = round(0.6*nrow(spam))
+train_ind = sample(1:nrow(spam), cut)
+test_ind = (1:nrow(spam))[-train_ind]
+y = spam[train_ind, 1]
+X = spam[train_ind, 2:ncol(spam)]
+yp = spam[test_ind, 1]
+Xp = spam[test_ind, 2:ncol(spam)]
+
+```
+
+The problematic part of fitting to this data immediately is its size:
+
+```{r}
+nrow(X)
+```
+
+Since we are using MCMC methods with a pseudo marginal approach, fitting to this data for a sufficient amount of iterations will be incredibly time consuming. We instead choose a subset which maximises the entropy score for a given subset size. We use the `ivm_subset_selection` function implemented here, and choose a subset size $d=150$. We also need to specify the covariance function (or kernel) $k$, as well as the initial values of the hyperparameter vector $\boldsymbol{\theta}$, since these are used in the subset selection.
+
+```{r cache=TRUE}
+kernel = function(x, y, theta) theta[1] * exp(-0.5 / theta[2]^2 * sum((x - y)^2))
+init_theta = c(1, 1)
+subset = ivm_subset_selection(X, kernel, init_theta, nsub = 150)
+```
+
+Now we can specify the model matrix $X$ and response vector $y$ that we will use for training the classification model.
+
+```{r}
+Xd = X[subset,]
+yd = y[subset]
+```
+
+### Fitting the Model
+
+The function `gpc` is a wrapper that calls the `Rcpp` functions that fit the classification model, including the pseudo marginal approximate likelihood and the Laplace approximation. These Rcpp functions are also written in parallel using `RcppParallel`, improving the speed of building the gram matrix $K$, and calculating the pseudo marginal approximation.
+
+We fit the model as follows:
+
+```{r cache=TRUE}
+gp_fit = gpc(y = yd, 
+             X = Xd, 
+             nsteps = 500,
+             nburn = 250,
+             nchains = 2,
+             nimp = 100, 
+             init_theta = c(1, 1),
+             kernel = "gaussian",
+             print_every = Inf
+)
+```
+
+Most arguments are self explanatory, but for a description of all inputs to `gpc`, see `?gpc`. Note that we have only used 500 steps, and an $Nimp$ value of 200, which is lower than what is written into the report. When fitting the full model, higher values are used.
+
+Now we can inspect the model using `plot.gpc`, an S3 method used for plotting `gpc` objects.
+
+```{r, fig.width=7, fig.height= 7 }
+plot(gp_fit)
+```
+By default, `plot.gpc` will plot the trace and density plots of the hyperparameters and the log pseudo marginal likelihood approximation. The argument `f=TRUE` will plot a series of the same plots for the latent variables $f$.
+
+### Predicting from the Model
+
+To obtain predictions from this fit, we can use `predict.gpc`, which averages across all values of hyperparameter vector `theta` across all samples and chains, to produce probabilities at each data point for the positive class.
+
+```{r cache=TRUE}
+pred_train = predict(gp_fit, X)
+```
+
+Note that we fit the model to `Xd`, the subset model matrix, but predictions can be evaluated on the full training dataset. We do the same for the testing set.
+
+```{r cache=TRUE}
+pred_test = predict(gp_fit, Xp)
+```
+
+From here, we can see the percentage of correct predictions in both cases (using a 0-1 loss, if the probabilities are greater than 0.5 then we predict the positive class, otherwise it is the negative class).
+
+```{r}
+output_pred_train = ifelse(pred_train > 0.5, 1, -1)
+output_pred_test = ifelse(pred_test > 0.5, 1, -1)
+```
+
+The percentages are given by 
+```{r}
+table(output_pred_train - y == 0)[2] / length(y)
+table(output_pred_test - yp == 0)[2] / length(yp)
+```
+
+
+
+
+
+
+
+
+
+
+

@@ -114,69 +114,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// log_lik
-arma::vec log_lik(const arma::vec& y, const arma::vec& f);
-RcppExport SEXP _gpc_log_lik(SEXP ySEXP, SEXP fSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type f(fSEXP);
-    rcpp_result_gen = Rcpp::wrap(log_lik(y, f));
-    return rcpp_result_gen;
-END_RCPP
-}
-// d_log_lik
-arma::vec d_log_lik(const arma::vec& y, const arma::vec& f);
-RcppExport SEXP _gpc_d_log_lik(SEXP ySEXP, SEXP fSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type f(fSEXP);
-    rcpp_result_gen = Rcpp::wrap(d_log_lik(y, f));
-    return rcpp_result_gen;
-END_RCPP
-}
-// d2_log_lik
-arma::vec d2_log_lik(const arma::vec& y, const arma::vec& f);
-RcppExport SEXP _gpc_d2_log_lik(SEXP ySEXP, SEXP fSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type f(fSEXP);
-    rcpp_result_gen = Rcpp::wrap(d2_log_lik(y, f));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rmvnorm
-arma::mat rmvnorm(int n, arma::vec& mu, arma::mat& sigma);
-RcppExport SEXP _gpc_rmvnorm(SEXP nSEXP, SEXP muSEXP, SEXP sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type sigma(sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmvnorm(n, mu, sigma));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dmvnorm
-arma::vec dmvnorm(arma::mat const& x, arma::vec const& mean, arma::mat sigma, bool const logd);
-RcppExport SEXP _gpc_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP logdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat const& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::vec const& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool const >::type logd(logdSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm(x, mean, sigma, logd));
-    return rcpp_result_gen;
-END_RCPP
-}
 // predict_gp
 arma::vec predict_gp(const arma::vec& y, arma::mat& X, arma::mat& newdata, const Rcpp::Function kernel, const Rcpp::List fit, const int nchains, const Rcpp::String kernel_pass, const int print_every);
 RcppExport SEXP _gpc_predict_gp(SEXP ySEXP, SEXP XSEXP, SEXP newdataSEXP, SEXP kernelSEXP, SEXP fitSEXP, SEXP nchainsSEXP, SEXP kernel_passSEXP, SEXP print_everySEXP) {
@@ -195,50 +132,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// mat_to_rcpp
-Rcpp::NumericMatrix mat_to_rcpp(arma::mat& X);
-RcppExport SEXP _gpc_mat_to_rcpp(SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(mat_to_rcpp(X));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_to_mat
-arma::mat rcpp_to_mat(Rcpp::NumericMatrix X);
-RcppExport SEXP _gpc_rcpp_to_mat(SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_to_mat(X));
-    return rcpp_result_gen;
-END_RCPP
-}
-// vec_to_rcpp
-Rcpp::NumericVector vec_to_rcpp(arma::vec& x);
-RcppExport SEXP _gpc_vec_to_rcpp(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(vec_to_rcpp(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_to_vec
-arma::vec rcpp_to_vec(Rcpp::NumericVector x);
-RcppExport SEXP _gpc_rcpp_to_vec(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_to_vec(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gpc_algo_1", (DL_FUNC) &_gpc_algo_1, 16},
@@ -248,16 +141,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gpc_build_K", (DL_FUNC) &_gpc_build_K, 4},
     {"_gpc_make_gram_par", (DL_FUNC) &_gpc_make_gram_par, 3},
     {"_gpc_laplace_approx", (DL_FUNC) &_gpc_laplace_approx, 2},
-    {"_gpc_log_lik", (DL_FUNC) &_gpc_log_lik, 2},
-    {"_gpc_d_log_lik", (DL_FUNC) &_gpc_d_log_lik, 2},
-    {"_gpc_d2_log_lik", (DL_FUNC) &_gpc_d2_log_lik, 2},
-    {"_gpc_rmvnorm", (DL_FUNC) &_gpc_rmvnorm, 3},
-    {"_gpc_dmvnorm", (DL_FUNC) &_gpc_dmvnorm, 4},
     {"_gpc_predict_gp", (DL_FUNC) &_gpc_predict_gp, 8},
-    {"_gpc_mat_to_rcpp", (DL_FUNC) &_gpc_mat_to_rcpp, 1},
-    {"_gpc_rcpp_to_mat", (DL_FUNC) &_gpc_rcpp_to_mat, 1},
-    {"_gpc_vec_to_rcpp", (DL_FUNC) &_gpc_vec_to_rcpp, 1},
-    {"_gpc_rcpp_to_vec", (DL_FUNC) &_gpc_rcpp_to_vec, 1},
     {NULL, NULL, 0}
 };
 

@@ -4,14 +4,12 @@
 using namespace arma;
 
 //' @keywords internal
-// [[Rcpp::export(name="rmvnorm_cpp")]]
 arma::mat rmvnorm(int n, arma::vec& mu, arma::mat& sigma) {
   int ncols = sigma.n_cols;
   arma::mat Y = arma::randn(n, ncols);
   return arma::repmat(mu, 1, n).t() + Y * chol_plus_diag(sigma, "upper");
 }
 //' @keywords internal
-// [[Rcpp::export(name="dmvnorm_cpp")]]
 arma::vec dmvnorm(arma::mat const &x,
   arma::vec const &mean,
   arma::mat sigma,

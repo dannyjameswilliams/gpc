@@ -6,8 +6,64 @@
 \title{Spam dataset}
 \format{A data frame with 4601 rows and 58 variables.
 \describe{
-\item{y}{binary response variable: +1 if spam, -1 if not}
-\item{X}{57 attributes detailing word frequencies and character frequencies in each e-mail}
+\item{response}{binary response variable: +1 if spam, -1 if not}
+\item{word_freq_make}{  }
+\item{word_freq_address}{  }
+\item{word_freq_all}{  }
+\item{word_freq_3d}{  }
+\item{word_freq_our}{  }
+\item{word_freq_over}{  }
+\item{word_freq_remove}{  }
+\item{word_freq_internet}{  }
+\item{word_freq_order}{  }
+\item{word_freq_mail}{  }
+\item{word_freq_receive}{  }
+\item{word_freq_will}{  }
+\item{word_freq_people}{  }
+\item{word_freq_report}{  }
+\item{word_freq_addresses}{  }
+\item{word_freq_free}{  }
+\item{word_freq_business}{  }
+\item{word_freq_email}{  }
+\item{word_freq_you}{  }
+\item{word_freq_credit}{  }
+\item{word_freq_your}{  }
+\item{word_freq_font}{  }
+\item{word_freq_000}{  }
+\item{word_freq_money}{  }
+\item{word_freq_hp}{  }
+\item{word_freq_hpl}{  }
+\item{word_freq_george}{  }
+\item{word_freq_650}{  }
+\item{word_freq_lab}{  }
+\item{word_freq_labs}{  }
+\item{word_freq_telnet}{  }
+\item{word_freq_857}{  }
+\item{word_freq_data}{  }
+\item{word_freq_415}{  }
+\item{word_freq_85}{  }
+\item{word_freq_technology}{  }
+\item{word_freq_1999}{  }
+\item{word_freq_parts}{  }
+\item{word_freq_pm}{  }
+\item{word_freq_direct}{  }
+\item{word_freq_cs}{  }
+\item{word_freq_meeting}{  }
+\item{word_freq_original}{  }
+\item{word_freq_project}{  }
+\item{word_freq_re}{  }
+\item{word_freq_edu}{  }
+\item{word_freq_table}{  }
+\item{word_freq_conference}{  }
+\item{char_freq_.3B}{  }
+\item{char_freq_.28}{  }
+\item{char_freq_.5B}{  }
+\item{char_freq_.21}{  }
+\item{char_freq_.24}{  }
+\item{char_freq_.23}{  }
+\item{capital_run_length_average}{  }
+\item{capital_run_length_longest}{  }
+\item{capital_run_length_total}{  }
 }}
 \source{
 \url{https://archive.ics.uci.edu/ml/datasets/spambase}
@@ -17,5 +73,6 @@ data(spam)
 }
 \description{
 A dataset containing a collection of spam e-mails, often used in classification examples.
+Contains 57 attributes detailing word frequencies and character frequencies in each e-mail.
 }
 \keyword{datasets}

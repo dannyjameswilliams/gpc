@@ -21,6 +21,21 @@ double kernel_gaussian(const arma::vec x, const arma::vec y, arma::vec theta)
   return out;
 }
 
+//' Make Gram Matrix
+//'
+//' Compute the Gram (covariance) matrix
+//'
+//' @param x input matrix 1
+//' @param y input matrix 2
+//' @param k R function to apply covariance function for elements of \code{x} and \code{y}
+//' @param theta hyperparameter vector to input to \code{k}
+//'
+//' @details
+//' The kernel function \code{k} needs to have arguments corresponding to  \code{x}, \code{y}, \code{theta} in that order.
+//'
+//' \code{build_K} computes the gram matrix for a given \code{k}. For a faster, parallel approach,
+//' \code{make_gram_par} uses a pre-determined Gaussian covariance function.
+//'
 // [[Rcpp::export(name="build_K")]]
 arma::mat build_K(const arma::mat& x, const arma::mat& y, Rcpp::Function k, const arma::vec& theta)
 {
@@ -105,6 +120,17 @@ struct kernel_eval : public RcppParallel::Worker
   }
 };
 
+//' Make Gram Matrix (Gaussian covariance)
+//'
+//' Compute the Gram (covariance) matrix in parallel with a Gaussian covariance function
+//'
+//' @param x input matrix 1
+//' @param y input matrix 2
+//' @param theta hyperparameter vector
+//'
+//' @details
+//' This is a faster, parallel approach to build the Gram matrix using a pre-determined Gaussian covariance function.
+//' \code{build_K} computes the gram matrix for a given \code{k}, but is slower and not in parallel.
 // [[Rcpp::export]]
 arma::mat make_gram_par(arma::mat& x, arma::mat& y, const arma::vec& theta) {
 
