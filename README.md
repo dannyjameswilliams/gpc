@@ -30,7 +30,7 @@ This is a basic example which demonstrates using the core `gpc` function on bund
 
 ``` r
 library(gpc)
-load("data/spamAnalysis.Rdata") #load spam data analysis
+load("data/spam.Rdata") #load spam data analysis
 
 fit <- gpc(y = y_train,X= as.matrix(X_train), 
   nsteps= 100,nburn= 0,nchains= 1,nimp= 100,init_theta= c(1,1),kernel= f,
