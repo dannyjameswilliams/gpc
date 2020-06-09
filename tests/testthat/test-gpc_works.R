@@ -29,7 +29,7 @@ test_that("fit gpc (with different f and not)", {
 })
 
 test_that("S3 methods work", {
-  fit = gpc(y, x, 50, 25, 1, 50, c(1,1), "gaussian")
+  fit = gpc(y, x, 50, 25, 2, 50, c(1,1), "gaussian")
 
   plot(fit)
   plot(fit, f=TRUE)
@@ -59,7 +59,10 @@ test_that("bad chol", {
   gpc:::chol_plus_diag(A, "lower")
 })
 
-
+test_that("bad laplace approximation", {
+  y = rep(1e5, length(y))
+  laplace_approx(y, K)
+})
 
 
 
