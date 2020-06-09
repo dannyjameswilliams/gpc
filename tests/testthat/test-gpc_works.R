@@ -40,6 +40,7 @@ test_that("S3 methods work", {
   random_theta = matrix(rnorm(nrow(fit$chain1)*5), nrow(fit$chain1), 5)
   colnames(random_theta) = paste0("theta[",3:7,"]")
   fit$chain1 = cbind(fit$chain1[,1:2], random_theta, fit$chain1[,3:ncol(fit$chain1)])
+  fit$chain2 = cbind(fit$chain2[,1:2], random_theta, fit$chain2[,3:ncol(fit$chain2)])
   fit$p = fit$p + 5
   plot(fit)
 })
