@@ -28,7 +28,7 @@ Alternatively, the package can be installed faster without building the vignette
 
 ## Package Contents
 
-The package contains software to efficiently fit a Gaussian process classification (gpc) mdoel, using `Rcpp` and `RcppParallel`. We also have included the e-mail spam dataset used for classification.
+The package contains software to efficiently fit a Gaussian process classification (gpc) model, using `Rcpp` and `RcppParallel`. We also have included the e-mail spam dataset used for classification.
 
 To see an example of the code, as well as a step-by-step tutorial for its implementation, see the vignette `using_gpc`, provided as an HTML document you can view in this repository by [clicking here](https://htmlpreview.github.io/?https://github.com/dannyjameswilliams/gpc/blob/master/using_gpc.html), or by running
 ```r
