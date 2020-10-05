@@ -30,7 +30,7 @@ Alternatively, the package can be installed faster without building the vignette
 
 The package contains software to efficiently fit a Gaussian process classification (gpc) model, using `Rcpp` and `RcppParallel`. We also have included the e-mail spam dataset used for classification.
 
-To see an example of the code, as well as a step-by-step tutorial for its implementation, see the vignette `using_gpc`, provided as an HTML document you can view in this repository by [clicking here](https://htmlpreview.github.io/?https://github.com/dannyjameswilliams/gpc/blob/master/using_gpc.html), or by running
+To see an example of the code, as well as a step-by-step tutorial for its implementation, see the vignette `using_gpc`, provided as an HTML document you can view in this repository by [clicking here](https://raw.githack.com/dannyjameswilliams/gpc/master/using_gpc.html), or by running
 ```r
 vignette(package="gpc")
 ```
